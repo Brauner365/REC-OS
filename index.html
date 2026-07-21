@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sourcing OS · Syntech Recruitment</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --black:#0f0f0f;--white:#ffffff;--gray-50:#f8f8f7;--gray-100:#f0f0ee;
+    --gray-200:#e4e4e1;--gray-300:#c8c8c4;--gray-500:#888884;--gray-700:#444441;
+    --accent:#1a6ef5;--accent-light:#e8f0fe;--accent-dark:#0c44b0;
+    --green:#1a7a3c;--green-light:#e6f4ec;
+    --amber:#9a5c00;--amber-light:#fef3e2;
+    --red:#c0392b;--red-light:#fdecea;
+    --purple:#5c3d9e;--purple-light:#f0ebff;
+    --radius:8px;--font:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+    --mono:'JetBrains Mono','Fira Code',monospace;
+  }
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  body{font-family:var(--font);background:var(--gray-50);color:var(--black);min-height:100vh;font-size:14px;line-height:1.5}
+
+  /* Layout */
+  .app{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
+  .sidebar{background:var(--white);border-right:1px solid var(--gray-200);padding:24px 0;display:flex;flex-direction:column}
+  .main{padding:32px;max-width:900px}
+
+  /* Sidebar */
+  .wordmark{padding:0 20px 24px;border-bottom:1px solid var(--gray-200);margin-bottom:16px}
+  .wordmark-title{font-size:15px;font-weight:600;letter-spacing:-0.01em;color:var(--black)}
+  .wordmark-sub{font-size:11px;color:var(--gray-500);margin-top:1px}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:9px 20px;font-size:13px;color:var(--gray-700);cursor:pointer;transition:background 0.1s;border:none;background:none;width:100%;text-align:left}
+  .nav-item:hover{background:var(--gray-50)}
+  .nav-item.active{background:var(--accent-light);color:var(--accent);font-weight:500}
+  .nav-item svg{width:16px;height:16px;flex-shrink:0;opacity:0.6}
+  .nav-item.active svg{opacity:1}
+  .nav-section{padding:16px 20px 6px;font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--gray-300)}
+  .sidebar-footer{margin-top:auto;padding:16px 20px;border-top:1px solid var(--gray-200)}
+  .sidebar-footer-text{font-size:11px;color:var(--gray-500);line-height:1.5}
+
+  /* Progress */
+  .progress-wrap{display:flex;align-items:center;gap:8px;margin-bottom:28px}
+  .progress-step{display:flex;align-items:center;gap:8px}
+  .p-circle{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--gray-300);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:var(--gray-500);flex-shrink:0;transition:all 0.2s}
+  .p-circle.active{border-color:var(--accent);background:var(--accent);color:var(--white)}
+  .p-circle.done{border-color:var(--green);background:var(--green);color:var(--white)}
+  .p-label{font-size:12px;color:var(--gray-500)}
+  .p-label.active{color:var(--black);font-weight:500}
+  .p-label.done{color:var(--green)}
+  .p-line{flex:1;height:1px;background:var(--gray-200);min-width:20px}
+  .p-line.done{background:var(--green)}
+
+  /* Cards */
+  .card{background:var(--white);border:1px solid var(--gray-200);border-radius:12px;padding:24px;margin-bottom:16px}
+  .card-title{font-size:13px;font-weight:500;color:var(--gray-500);margin-bottom:16px;text-transform:uppercase;letter-spacing:0.05em}
+
+  /* Form */
+  .field{margin-bottom:16px}
+  .field label{display:block;font-size:12px;font-weight:500;color:var(--gray-700);margin-bottom:5px}
+  .field input,.field select,.field textarea{width:100%;padding:9px 12px;border:1px solid var(--gray-200);border-radius:var(--radius);font-family:var(--font);font-size:14px;color:var(--black);background:var(--white);outline:none;transition:border-color 0.15s}
+  .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent)}
+  .field textarea{resize:vertical;line-height:1.6}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+
+  /* Buttons */
+  .btn{padding:9px 18px;border-radius:var(--radius);font-family:var(--font);font-size:13px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:7px;border:none;transition:all 0.15s}
+  .btn-primary{background:var(--black);color:var(--white)}
+  .btn-primary:hover{background:var(--gray-700)}
+  .btn-secondary{background:var(--white);color:var(--gray-700);border:1px solid var(--gray-200)}
+  .btn-secondary:hover{background:var(--gray-50)}
+  .btn-sm{padding:5px 12px;font-size:11px}
+
+  .actions{display:flex;align-items:center;justify-content:space-between;padding-top:20px;margin-top:20px;border-top:1px solid var(--gray-200)}
+
+  /* Views */
+  .view{display:none}
+  .view.on{display:block}
+
+  /* Loading */
+  .loading-wrap{padding:60px 0;text-align:center}
+  .spinner{width:32px;height:32px;border:2.5px solid var(--gray-200);border-top-color:var(--black);border-radius:50%;animation:spin 0.75s linear infinite;margin:0 auto 20px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .loading-title{font-size:15px;font-weight:500;margin-bottom:6px}
+  .loading-sub{font-size:13px;color:var(--gray-500);margin-bottom:24px}
+  .loading-steps{list-style:none;display:inline-flex;flex-direction:column;gap:8px;text-align:left}
+  .ls{font-size:13px;color:var(--gray-300);display:flex;align-items:center;gap:10px;transition:color 0.3s}
+  .ls.active{color:var(--gray-700)}
+  .ls.done{color:var(--green)}
+  .ls-dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0}
+  .ls.active .ls-dot{animation:pulse 1s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.2}}
+
+  /* Results — shared */
+  .section-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--gray-500);margin-bottom:10px;margin-top:20px}
+  .section-label:first-child{margin-top:0}
+  .divider{height:1px;background:var(--gray-200);margin:20px 0}
+
+  .row-list{border:1px solid var(--gray-200);border-radius:var(--radius);overflow:hidden}
+  .row-item{display:flex;align-items:flex-start;gap:12px;padding:11px 14px;border-bottom:1px solid var(--gray-200);font-size:13px}
+  .row-item:last-child{border-bottom:none}
+  .row-key{width:130px;flex-shrink:0;color:var(--gray-500);padding-top:1px}
+  .row-val{flex:1;color:var(--black);line-height:1.5}
+
+  .badge{display:inline-block;font-size:11px;font-weight:500;padding:2px 9px;border-radius:20px;margin:2px 3px 2px 0}
+  .b-blue{background:var(--accent-light);color:var(--accent-dark)}
+  .b-green{background:var(--green-light);color:var(--green)}
+  .b-amber{background:var(--amber-light);color:var(--amber)}
+  .b-red{background:var(--red-light);color:var(--red)}
+  .b-purple{background:var(--purple-light);color:var(--purple)}
+  .b-gray{background:var(--gray-100);color:var(--gray-700);border:1px solid var(--gray-200)}
+
+  .signal-list{display:flex;flex-direction:column;gap:0}
+  .sig{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid var(--gray-200);align-items:flex-start}
+  .sig:last-child{border-bottom:none}
+  .sig-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
+  .sig-text{font-size:13px;color:var(--black);line-height:1.45;flex:1}
+  .sig-meta{font-size:11px;color:var(--gray-500);margin-top:2px}
+
+  .tip{background:var(--amber-light);border-radius:var(--radius);padding:12px 14px;font-size:13px;color:var(--amber);line-height:1.55;margin-top:16px}
+
+  /* Boolean blocks */
+  .bool-group{margin-bottom:20px}
+  .bool-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+  .bool-label{font-size:12px;font-weight:500;color:var(--gray-700)}
+  .bool-board-tag{font-size:10px;color:var(--gray-500);font-weight:400;margin-left:6px}
+  .bool-block{background:var(--gray-50);border:1px solid var(--gray-200);border-radius:var(--radius);padding:14px 16px;font-family:var(--mono);font-size:12px;line-height:1.85;color:var(--black);white-space:pre-wrap;word-break:break-all}
+  .op{color:var(--accent-dark);font-weight:500}
+  .term{color:var(--green)}
+  .site{color:var(--amber)}
+  .comment{color:var(--gray-500);font-style:italic}
+
+  /* Company tiers */
+  .tier{border:1px solid var(--gray-200);border-radius:var(--radius);margin-bottom:10px;overflow:hidden}
+  .tier-head{padding:10px 14px;background:var(--gray-50);display:flex;align-items:center;justify-content:space-between}
+  .tier-name{font-size:12px;font-weight:500;color:var(--black)}
+  .tier-body{padding:12px 14px;display:flex;flex-wrap:wrap;gap:6px}
+  .co-pill{font-size:12px;padding:4px 12px;border:1px solid var(--gray-200);border-radius:20px;color:var(--gray-700);background:var(--white)}
+
+  /* Outreach */
+  .msg-box{background:var(--gray-50);border:1px solid var(--gray-200);border-left:3px solid var(--black);border-radius:0 var(--radius) var(--radius) 0;padding:14px 16px;font-size:13px;color:var(--black);line-height:1.7;margin-bottom:12px;white-space:pre-wrap}
+
+  /* Watchdogs */
+  .wd-list{display:flex;flex-direction:column;gap:0}
+  .wd{display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid var(--gray-200)}
+  .wd:last-child{border-bottom:none}
+  .wd-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;margin-top:1px}
+  .wd-body{flex:1}
+  .wd-title{font-size:13px;color:var(--black);line-height:1.4}
+  .wd-where{font-size:11px;color:var(--gray-500);margin-top:3px}
+  .wd-freq{font-size:11px;padding:2px 8px;border-radius:4px;background:var(--gray-100);color:var(--gray-700);flex-shrink:0;margin-top:3px}
+
+  /* Action list */
+  .ac-list{display:flex;flex-direction:column;gap:0}
+  .ac{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid var(--gray-200);align-items:flex-start}
+  .ac:last-child{border-bottom:none}
+  .ac-num{width:22px;height:22px;border-radius:50%;border:1px solid var(--gray-300);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:var(--gray-500);flex-shrink:0;margin-top:1px}
+  .ac-text{font-size:13px;color:var(--black);line-height:1.5;flex:1}
+
+  /* Error */
+  .error-box{background:var(--red-light);border:1px solid #f5c6c2;border-radius:var(--radius);padding:12px 16px;font-size:13px;color:var(--red);margin-bottom:16px}
+
+  /* Streaming cursor */
+  .cursor{display:inline-block;width:2px;height:14px;background:var(--black);margin-left:2px;vertical-align:middle;animation:blink-cur 0.8s step-end infinite}
+  @keyframes blink-cur{0%,100%{opacity:1}50%{opacity:0}}
+
+  /* Scrollable content areas */
+  .result-scroll{max-height:none}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="wordmark">
+      <div class="wordmark-title">Sourcing OS</div>
+      <div class="wordmark-sub">by Steve Brauner</div>
+    </div>
+    <span class="nav-section">Tools</span>
+    <button class="nav-item active" id="nav-new" onclick="resetToStart()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 12h6M12 9v6M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0z"/></svg>
+      New brief
+    </button>
+    <button class="nav-item" id="nav-saved" onclick="openSaved()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M4 10h16M4 14h10M4 18h8"/></svg>
+      Saved playbooks
+    </button>
+    <button class="nav-item" id="nav-watchdog" onclick="openWatchdogs()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0 1 18 14.158V11a6 6 0 1 0-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0a3 3 0 1 1-6 0"/></svg>
+      Watchdogs
+    </button>
+    <div style="margin-top:auto">
+      <div style="padding:12px 20px;border-top:1px solid var(--gray-200)">
+        <div style="font-size:11px;color:var(--gray-500);line-height:1.6">Internal use only<br>Syntech Recruitment · 2026<br>Keys held securely on server</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+
+    <!-- Progress bar -->
+    <div class="progress-wrap" id="progressBar">
+      <div class="progress-step">
+        <div class="p-circle active" id="pc0">1</div>
+        <div class="p-label active" id="pl0">Brief</div>
+      </div>
+      <div class="p-line" id="pline0"></div>
+      <div class="progress-step">
+        <div class="p-circle" id="pc1">2</div>
+        <div class="p-label" id="pl1">Intelligence</div>
+      </div>
+      <div class="p-line" id="pline1"></div>
+      <div class="progress-step">
+        <div class="p-circle" id="pc2">3</div>
+        <div class="p-label" id="pl2">Sourcing strings</div>
+      </div>
+      <div class="p-line" id="pline2"></div>
+      <div class="progress-step">
+        <div class="p-circle" id="pc3">4</div>
+        <div class="p-label" id="pl3">Playbook</div>
+      </div>
+    </div>
+
+    <!-- VIEW: Brief form -->
+    <div class="view on" id="vBrief">
+      <div class="card">
+        <div class="card-title">Job brief</div>
+        <div class="field">
+          <label>Job title *</label>
+          <input type="text" id="f-title" placeholder="e.g. QHSE Manager">
+        </div>
+        <div class="grid-2 field">
+          <div>
+            <label>Client / company *</label>
+            <input type="text" id="f-client" placeholder="e.g. Nexgen Electronics Ltd">
+          </div>
+          <div>
+            <label>Sector *</label>
+            <select id="f-sector">
+              <option value="">Select sector…</option>
+              <option>Electronics manufacturing</option>
+              <option>Engineering</option>
+              <option>Construction</option>
+              <option>Logistics / supply chain</option>
+              <option>Pharma / life sciences</option>
+              <option>Energy / utilities</option>
+              <option>Defence / aerospace</option>
+              <option>Automotive</option>
+              <option>Food manufacturing</option>
+              <option>Chemical / process</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid-2 field">
+          <div>
+            <label>Location *</label>
+            <input type="text" id="f-loc" placeholder="e.g. Andover, Hampshire">
+          </div>
+          <div>
+            <label>Salary range</label>
+            <input type="text" id="f-sal" placeholder="e.g. £50,000 – £60,000">
+          </div>
+        </div>
+        <div class="grid-3 field">
+          <div>
+            <label>Experience required</label>
+            <input type="text" id="f-exp" placeholder="e.g. 5+ years">
+          </div>
+          <div>
+            <label>Seniority level</label>
+            <select id="f-sen">
+              <optgroup label="Entry / Junior">
+                <option>Entry level / Trainee</option>
+                <option>Junior</option>
+                <option>Graduate</option>
+              </optgroup>
+              <optgroup label="Operational">
+                <option>Operative / Labourer</option>
+                <option>Warehouse Operative</option>
+                <option>Technician</option>
+                <option>Administrator</option>
+                <option>Co-ordinator</option>
+              </optgroup>
+              <optgroup label="Professional / Officer">
+                <option>Officer</option>
+                <option>Advisor</option>
+                <option>Analyst</option>
+                <option>Engineer</option>
+                <option>Specialist</option>
+                <option>Consultant</option>
+                <option>Assistant (e.g. Asst. Mgmt. Accountant)</option>
+              </optgroup>
+              <optgroup label="Senior professional">
+                <option>Senior Officer</option>
+                <option>Senior Advisor</option>
+                <option>Senior Engineer</option>
+                <option>Senior Analyst</option>
+                <option>Senior Specialist</option>
+                <option>Lead</option>
+                <option>Principal</option>
+              </optgroup>
+              <optgroup label="Management">
+                <option>Team Leader / Supervisor</option>
+                <option>Assistant Manager</option>
+                <option>Manager</option>
+                <option>Senior Manager</option>
+              </optgroup>
+              <optgroup label="Leadership">
+                <option>Head of Department</option>
+                <option>Associate Director</option>
+                <option>Director</option>
+                <option>Senior Director</option>
+                <option>VP / Vice President</option>
+                <option>C-Suite / Executive</option>
+              </optgroup>
+            </select>
+          </div>
+          <div>
+            <label>Headcount to fill</label>
+            <input type="text" id="f-hc" placeholder="e.g. 1" value="1">
+          </div>
+        </div>
+        <div class="field">
+          <label>Job description / key requirements *</label>
+          <textarea id="f-jd" rows="5" placeholder="Paste the JD or key bullet points here — the more detail, the better the output…"></textarea>
+        </div>
+        <div class="field">
+          <label>Intel you already have <span style="color:var(--gray-500);font-weight:400">(optional — anything about the company, why the role exists, urgency)</span></label>
+          <textarea id="f-intel" rows="3" placeholder="e.g. New facility, retirement replacement, recent restructure, just won a contract…"></textarea>
+        </div>
+        <div id="briefError"></div>
+        <div class="actions">
+          <span style="font-size:12px;color:var(--gray-500)">Generates full playbook in ~20 seconds</span>
+          <button class="btn btn-primary" onclick="runAnalysis()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            Run Sourcing OS
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: Loading -->
+    <div class="view" id="vLoading">
+      <div class="card">
+        <div class="loading-wrap">
+          <div class="spinner"></div>
+          <div class="loading-title" id="loadTitle">Analysing brief…</div>
+          <div class="loading-sub" id="loadSub">This takes about 20 seconds</div>
+          <ul class="loading-steps">
+            <li class="ls active" id="ls0"><span class="ls-dot"></span>Researching company and hire signals</li>
+            <li class="ls" id="ls1"><span class="ls-dot"></span>Mapping candidate universe</li>
+            <li class="ls" id="ls2"><span class="ls-dot"></span>Building boolean strings for all job boards</li>
+            <li class="ls" id="ls3"><span class="ls-dot"></span>Identifying target companies</li>
+            <li class="ls" id="ls4"><span class="ls-dot"></span>Writing outreach messaging</li>
+            <li class="ls" id="ls5"><span class="ls-dot"></span>Setting watchdog triggers</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: Intelligence -->
+    <div class="view" id="vIntel">
+      <div class="card">
+        <div class="card-title">Company intelligence</div>
+        <div id="intelContent"></div>
+        <div class="actions">
+          <button class="btn btn-secondary" onclick="goTo('vBrief',0)">← Edit brief</button>
+          <button class="btn btn-primary" onclick="goTo('vSource',2)">Sourcing strings →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: Sourcing strings -->
+    <div class="view" id="vSource">
+      <div class="card">
+        <div class="card-title">Sourcing strings</div>
+        <div id="sourceContent"></div>
+        <div class="actions">
+          <button class="btn btn-secondary" onclick="goTo('vIntel',1)">← Intelligence</button>
+          <button class="btn btn-primary" onclick="goTo('vPlaybook',3)">Playbook →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: Playbook -->
+    <div class="view" id="vPlaybook">
+      <div class="card">
+        <div class="card-title">Outreach &amp; playbook</div>
+        <div id="playbookContent"></div>
+        <div class="actions">
+          <button class="btn btn-secondary" onclick="goTo('vSource',2)">← Sourcing strings</button>
+          <button class="btn btn-primary" onclick="resetToStart()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            New brief
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: Saved Playbooks -->
+    <div class="view" id="vSaved">
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+          <div class="card-title" style="margin-bottom:0">Saved playbooks</div>
+          <button class="btn btn-secondary btn-sm" onclick="clearAllSaved()" style="color:var(--red)">Clear all</button>
+        </div>
+        <div id="savedList"></div>
+      </div>
+    </div>
+
+    <!-- VIEW: Watchdog Dashboard -->
+    <div class="view" id="vWatchdog">
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+          <div class="card-title" style="margin-bottom:0">Active watchdogs</div>
+          <span style="font-size:12px;color:var(--gray-500)" id="wdCount">0 active</span>
+        </div>
+        <div id="watchdogList"></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+// ─── State ───────────────────────────────────────────────────────────────────
+const AI_OUTPUT = { intel: '', source: '', playbook: '' };
+let currentBrief = {};
+
+// ─── Navigation ──────────────────────────────────────────────────────────────
+const VIEWS = ['vBrief','vLoading','vIntel','vSource','vPlaybook','vSaved','vWatchdog'];
+const STEP_VIEWS = ['vBrief','vIntel','vSource','vPlaybook'];
+
+function setNavActive(id) {
+  ['nav-new','nav-saved','nav-watchdog','nav-settings'].forEach(n => {
+    const el = document.getElementById(n);
+    if (el) el.classList.remove('active');
+  });
+  const el = document.getElementById(id);
+  if (el) el.classList.add('active');
+}
+
+function goTo(viewId, stepIdx) {
+  VIEWS.forEach(v => document.getElementById(v).classList.remove('on'));
+  document.getElementById(viewId).classList.add('on');
+  updateProgress(stepIdx);
+  setNavActive('nav-new');
+}
+
+function updateProgress(activeStep) {
+  for (let i = 0; i < 4; i++) {
+    const circle = document.getElementById('pc'+i);
+    const label = document.getElementById('pl'+i);
+    circle.classList.remove('active','done');
+    label.classList.remove('active','done');
+    if (i < activeStep) { circle.classList.add('done'); circle.textContent = '✓'; label.classList.add('done'); }
+    else if (i === activeStep) { circle.classList.add('active'); circle.textContent = i+1; label.classList.add('active'); }
+    else { circle.textContent = i+1; }
+    if (i < 3) {
+      const line = document.getElementById('pline'+i);
+      line.classList.toggle('done', i < activeStep);
+    }
+  }
+}
+
+function resetToStart() {
+  goTo('vBrief', 0);
+  document.getElementById('briefError').innerHTML = '';
+}
+
+// ─── Validation ───────────────────────────────────────────────────────────────
+function validate() {
+  const required = {
+    'f-title': 'Job title',
+    'f-client': 'Client name',
+    'f-sector': 'Sector',
+    'f-loc': 'Location',
+    'f-jd': 'Job description'
+  };
+  for (const [id, name] of Object.entries(required)) {
+    if (!document.getElementById(id).value.trim()) {
+      document.getElementById('briefError').innerHTML =
+        `<div class="error-box">Please fill in: ${name}</div>`;
+      return false;
+    }
+  }
+  document.getElementById('briefError').innerHTML = '';
+  return true;
+}
+
+// ─── Loading animation ────────────────────────────────────────────────────────
+function animateLoading() {
+  const steps = ['ls0','ls1','ls2','ls3','ls4','ls5'];
+  const delays = [0, 2500, 5000, 8000, 11000, 14500];
+  steps.forEach((id, i) => {
+    setTimeout(() => {
+      if (i > 0) {
+        const prev = document.getElementById(steps[i-1]);
+        prev.classList.remove('active');
+        prev.classList.add('done');
+      }
+      document.getElementById(id).classList.add('active');
+    }, delays[i]);
+  });
+}
+
+// ─── Build prompt ─────────────────────────────────────────────────────────────
+function buildPrompt(section) {
+  const title   = document.getElementById('f-title').value.trim();
+  const client  = document.getElementById('f-client').value.trim();
+  const sector  = document.getElementById('f-sector').value;
+  const loc     = document.getElementById('f-loc').value.trim();
+  const sal     = document.getElementById('f-sal').value.trim();
+  const exp     = document.getElementById('f-exp').value.trim();
+  const sen     = document.getElementById('f-sen').value;
+  const hc      = document.getElementById('f-hc').value.trim();
+  const jd      = document.getElementById('f-jd').value.trim();
+  const intel   = document.getElementById('f-intel').value.trim();
+
+  const briefBlock = `
+JOB BRIEF:
+- Title: ${title}
+- Client: ${client}
+- Sector: ${sector}
+- Location: ${loc}
+- Salary: ${sal || 'Not specified'}
+- Experience: ${exp || 'Not specified'}
+- Seniority: ${sen}
+- Headcount: ${hc}
+- JD / Requirements: ${jd}
+- Existing intel: ${intel || 'None provided'}
+  `.trim();
+
+  const systemPrompt = `You are Sourcing OS, an expert recruitment intelligence engine built for Syntech Recruitment, a specialist engineering and industrial recruiter in the UK. You analyse job briefs and generate precise, actionable sourcing playbooks for recruitment consultants. You understand UK recruitment deeply — job boards (Reed, CV-Library, Totaljobs, Indeed, Monster, CWJobs), LinkedIn Recruiter, boolean search syntax, X-ray searching, and how to identify the right candidate universe for any role. You write in a direct, no-fluff style. Use HTML with inline classes for formatting (the app has these classes pre-loaded: section-label, row-list, row-item, row-key, row-val, badge b-blue b-green b-amber b-red b-purple b-gray, signal-list sig sig-dot sig-text sig-meta, tip, bool-group bool-header bool-label bool-board-tag bool-block op term site comment, tier tier-head tier-name tier-body co-pill, msg-box, wd-list wd wd-icon wd-body wd-title wd-where wd-freq, ac-list ac ac-num ac-text, divider). Output ONLY the inner HTML content for the specified section — no surrounding tags, no markdown, no explanations.`;
+
+  const prompts = {
+    intel: `${systemPrompt}
+
+${briefBlock}
+
+Generate the INTELLIGENCE section. Include:
+1. Company profile (industry, specialisms, size estimate, location, certifications if inferable, any recent signals)
+2. Hire signals — why does this role exist NOW? (3–4 signals, each with a coloured sig-dot: red=high urgency, amber=medium, blue=market signal, green=derived). Use sig-meta to note confidence level.
+3. A tip box with placement advice specific to this role.
+
+Use the row-list/row-item pattern for company profile. Use signal-list/sig pattern for signals.`,
+
+    source: `${systemPrompt}
+
+${briefBlock}
+
+Generate the SOURCING STRINGS section. Include ALL of the following with copy buttons (add a button element with class="btn btn-sm btn-secondary" onclick="copyText(this)" data-text="[the plain text version]"):
+
+1. LinkedIn Recruiter / Sales Navigator boolean (use op/term CSS classes for syntax highlighting in the bool-block)
+2. Google X-ray for LinkedIn profiles (site:linkedin.com/in)
+3. Reed / CV-Library / Totaljobs boolean (these boards use slightly simpler syntax — no quotes needed on single words)
+4. Indeed / Monster / Jobsite boolean (plain keyword style with -exclusions)
+5. CWJobs / specialist engineering job boards boolean
+6. Google X-ray for job board CVs (site:reed.co.uk OR site:cv-library.co.uk etc.)
+
+Then include a TARGET COMPANIES section with 3 tiers:
+- Tier 1: Direct competitors most likely to hold the right candidates (name 5–8 real companies)
+- Tier 2: Adjacent sector companies with transferable QHSE/discipline professionals
+- Tier 3: Step-up candidates (describe the profile, e.g. "Senior HSE Advisors at Tier 1/2 ready to move to manager")
+
+Also include a COMMUTE ZONE section (primary 0–30min, secondary 30–50min, stretch 50–70min) based on the location.
+
+Use bool-group/bool-block pattern for each string. Use tier/co-pill pattern for companies.`,
+
+    playbook: `${systemPrompt}
+
+${briefBlock}
+
+Generate the PLAYBOOK section. Include:
+
+1. LinkedIn InMail — first touch message (msg-box). Subject line included. [Name] placeholders where personal. Tone: direct, specific, no fluff.
+2. Reverse marketing call script (msg-box) — for calling warm database candidates. Punchy, natural, includes a referral ask at the end.
+3. WATCHDOGS — 6 specific watchdog triggers. For each: what to monitor, exactly where/how to set it up, and frequency (Daily/Weekly/Monthly/Instant). Cover: LinkedIn Open to Work alerts, Google Alerts, Reed saved search, CV-Library alert, Indeed job alert (competitor tracking), Sales Navigator company alerts, NEBOSH/IOSH new completions. Use the wd-list/wd pattern. wd-icon should use background color style inline.
+4. DAY 1 ACTIONS — numbered list of exactly what the consultant should do in the next 4 hours, in priority order. Use ac-list/ac pattern. Be specific — no vague actions.`
+  };
+
+  return { system: systemPrompt, user: prompts[section] };
+}
+
+// ─── Worker URL ───────────────────────────────────────────────────────────────
+const WORKER_URL = 'https://sourcing-os-steve-brauner.workers.dev';
+
+// ─── API call via Worker ──────────────────────────────────────────────────────
+async function callClaude(section) {
+  const { system, user } = buildPrompt(section);
+
+  // Intel uses Perplexity (live web search) if available on Worker, else Claude
+  const provider = section === 'intel' ? 'perplexity' : 'claude';
+
+  const res = await fetch(WORKER_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ provider, system, user })
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || `Worker error ${res.status}`);
+  }
+
+  const data = await res.json();
+  if (data.error) throw new Error(data.error);
+  return data.text || '';
+}
+
+// ─── Save playbook to localStorage ───────────────────────────────────────────
+function savePlaybook() {
+  const saved = JSON.parse(localStorage.getItem('sos_playbooks') || '[]');
+  const entry = {
+    id: Date.now(),
+    date: new Date().toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'}),
+    title: currentBrief.title,
+    client: currentBrief.client,
+    location: currentBrief.loc,
+    sector: currentBrief.sector,
+    intel: AI_OUTPUT.intel,
+    source: AI_OUTPUT.source,
+    playbook: AI_OUTPUT.playbook,
+    watchdogs: extractWatchdogs(AI_OUTPUT.playbook)
+  };
+  saved.unshift(entry);
+  if (saved.length > 20) saved.pop();
+  localStorage.setItem('sos_playbooks', JSON.stringify(saved));
+  const btn = document.getElementById('saveBtn');
+  if (btn) { btn.textContent = 'Saved'; btn.disabled = true; }
+  refreshWatchdogCount();
+}
+
+function extractWatchdogs(html) {
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html;
+  const wds = tmp.querySelectorAll('.wd');
+  return Array.from(wds).map(w => ({
+    title: w.querySelector('.wd-title')?.innerText || '',
+    where: w.querySelector('.wd-where')?.innerText || '',
+    freq: w.querySelector('.wd-freq')?.innerText || ''
+  }));
+}
+
+function refreshWatchdogCount() {
+  const saved = JSON.parse(localStorage.getItem('sos_playbooks') || '[]');
+  const total = saved.reduce((n, p) => n + (p.watchdogs?.length || 0), 0);
+  const el = document.getElementById('wdCount');
+  if (el) el.textContent = total + ' active';
+}
+
+// ─── Open saved playbooks view ────────────────────────────────────────────────
+function openSaved() {
+  VIEWS.forEach(v => document.getElementById(v).classList.remove('on'));
+  document.getElementById('vSaved').classList.add('on');
+  setNavActive('nav-saved');
+  renderSaved();
+}
+
+function renderSaved() {
+  const saved = JSON.parse(localStorage.getItem('sos_playbooks') || '[]');
+  const el = document.getElementById('savedList');
+  if (!saved.length) {
+    el.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--gray-500);font-size:13px">No saved playbooks yet. Generate one and click Save playbook.</div>';
+    return;
+  }
+  el.innerHTML = saved.map((p, i) => `
+    <div style="border:1px solid var(--gray-200);border-radius:var(--radius);margin-bottom:10px;overflow:hidden">
+      <div style="padding:12px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;background:var(--gray-50)" onclick="toggleSavedItem(${i})">
+        <div>
+          <div style="font-size:14px;font-weight:500;color:var(--black)">${p.title} <span style="color:var(--gray-500);font-weight:400">· ${p.client}</span></div>
+          <div style="font-size:12px;color:var(--gray-500);margin-top:2px">${p.location} · ${p.sector} · ${p.date}</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();deleteSaved(${p.id})">Delete</button>
+          <svg id="chevron-${i}" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gray-500)" stroke-width="2" style="transition:transform 0.2s"><path d="m6 9 6 6 6-6"/></svg>
+        </div>
+      </div>
+      <div id="saved-body-${i}" style="display:none;padding:20px 16px;border-top:1px solid var(--gray-200)">
+        <div style="display:flex;gap:8px;margin-bottom:16px">
+          <button class="btn btn-secondary btn-sm" onclick="showSavedSection(${i},'intel')">Intelligence</button>
+          <button class="btn btn-secondary btn-sm" onclick="showSavedSection(${i},'source')">Sourcing strings</button>
+          <button class="btn btn-secondary btn-sm" onclick="showSavedSection(${i},'playbook')">Playbook</button>
+        </div>
+        <div id="saved-content-${i}">${p.intel}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleSavedItem(i) {
+  const body = document.getElementById('saved-body-'+i);
+  const chevron = document.getElementById('chevron-'+i);
+  const open = body.style.display === 'block';
+  body.style.display = open ? 'none' : 'block';
+  chevron.style.transform = open ? '' : 'rotate(180deg)';
+}
+
+function showSavedSection(i, section) {
+  const saved = JSON.parse(localStorage.getItem('sos_playbooks') || '[]');
+  const p = saved[i];
+  if (!p) return;
+  document.getElementById('saved-content-'+i).innerHTML = p[section] || '';
+}
+
+function deleteSaved(id) {
+  let saved = JSON.parse(localStorage.getItem('sos_playbooks') || '[]');
+  saved = saved.filter(p => p.id !== id);
+  localStorage.setItem('sos_playbooks', JSON.stringify(saved));
+  renderSaved();
+  refreshWatchdogCount();
+}
+
+function clearAllSaved() {
+  if (!confirm('Delete all saved playbooks?')) return;
+  localStorage.removeItem('sos_playbooks');
+  renderSaved();
+  refreshWatchdogCount();
+}
+
+// ─── Open watchdog dashboard ──────────────────────────────────────────────────
+function openWatchdogs() {
+  VIEWS.forEach(v => document.getElementById(v).classList.remove('on'));
+  document.getElementById('vWatchdog').classList.add('on');
+  setNavActive('nav-watchdog');
+  renderWatchdogs();
+}
+
+function renderWatchdogs() {
+  const saved = JSON.parse(localStorage.getItem('sos_playbooks') || '[]');
+  const el = document.getElementById('watchdogList');
+  const countEl = document.getElementById('wdCount');
+
+  const allWds = [];
+  saved.forEach(p => {
+    if (p.watchdogs?.length) {
+      p.watchdogs.forEach(w => allWds.push({ ...w, role: p.title, client: p.client, date: p.date }));
+    }
+  });
+
+  if (countEl) countEl.textContent = allWds.length + ' active';
+
+  if (!allWds.length) {
+    el.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--gray-500);font-size:13px">No watchdogs yet. Generate a playbook and save it — watchdogs are extracted automatically.</div>';
+    return;
+  }
+
+  const freqOrder = { 'Instant': 0, 'Daily': 1, 'Weekly': 2, 'Monthly': 3 };
+  allWds.sort((a,b) => (freqOrder[a.freq]||9) - (freqOrder[b.freq]||9));
+
+  const freqColors = { 'Instant':'var(--red-light)', 'Daily':'var(--accent-light)', 'Weekly':'var(--green-light)', 'Monthly':'var(--purple-light)' };
+  const freqText  = { 'Instant':'var(--red)', 'Daily':'var(--accent-dark)', 'Weekly':'var(--green)', 'Monthly':'var(--purple)' };
+
+  el.innerHTML = `
+    <div class="wd-list">
+      ${allWds.map(w => `
+        <div class="wd">
+          <div style="display:flex;flex-direction:column;gap:3px;width:60px;flex-shrink:0">
+            <span style="font-size:10px;font-weight:600;padding:2px 6px;border-radius:3px;text-align:center;background:${freqColors[w.freq]||'var(--gray-100)'};color:${freqText[w.freq]||'var(--gray-700)'}">${w.freq||'—'}</span>
+          </div>
+          <div class="wd-body">
+            <div class="wd-title">${w.title}</div>
+            <div class="wd-where">${w.where}</div>
+            <div style="font-size:11px;color:var(--gray-300);margin-top:3px">${w.role} · ${w.client} · set ${w.date}</div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+// ─── Copy helper ──────────────────────────────────────────────────────────────
+function copyText(btn) {
+  const text = btn.getAttribute('data-text') || btn.closest('.bool-group')?.querySelector('.bool-block')?.innerText || '';
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = 'Copied';
+    setTimeout(() => btn.textContent = orig, 1800);
+  }).catch(() => {});
+}
+
+// ─── Main analysis runner ────────────────────────────────────────────────────
+async function runAnalysis() {
+  if (!validate()) return;
+
+  currentBrief = {
+    title:  document.getElementById('f-title').value.trim(),
+    client: document.getElementById('f-client').value.trim(),
+    loc:    document.getElementById('f-loc').value.trim(),
+    sector: document.getElementById('f-sector').value
+  };
+
+  goTo('vLoading', 1);
+  updateProgress(0);
+  animateLoading();
+
+  try {
+    const [intelHtml, sourceHtml, playbookHtml] = await Promise.all([
+      callClaude('intel'),
+      callClaude('source'),
+      callClaude('playbook')
+    ]);
+
+    AI_OUTPUT.intel    = intelHtml;
+    AI_OUTPUT.source   = sourceHtml;
+    AI_OUTPUT.playbook = playbookHtml;
+
+    document.getElementById('intelContent').innerHTML    = intelHtml;
+    document.getElementById('sourceContent').innerHTML   = sourceHtml;
+    document.getElementById('playbookContent').innerHTML = playbookHtml;
+
+    // Inject save button into playbook actions
+    const saveBtn = document.createElement('button');
+    saveBtn.id = 'saveBtn';
+    saveBtn.className = 'btn btn-secondary';
+    saveBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save playbook';
+    saveBtn.onclick = savePlaybook;
+    const actionsRow = document.querySelector('#vPlaybook .actions');
+    if (actionsRow) actionsRow.insertBefore(saveBtn, actionsRow.querySelector('.btn-secondary'));
+
+    ['ls0','ls1','ls2','ls3','ls4','ls5'].forEach(id => {
+      const el = document.getElementById(id);
+      el.classList.remove('active');
+      el.classList.add('done');
+    });
+
+    setTimeout(() => goTo('vIntel', 1), 400);
+
+  } catch (err) {
+    goTo('vBrief', 0);
+    document.getElementById('briefError').innerHTML =
+      `<div class="error-box">Something went wrong: ${err.message}. Check your API key is set and try again.</div>`;
+  }
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+refreshWatchdogCount();
+</script>
+</body>
+</html>
