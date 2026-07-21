@@ -167,6 +167,21 @@
 
   /* Scrollable content areas */
   .result-scroll{max-height:none}
+
+  /* Safety net — ensure signal rows always lay out correctly regardless of AI class variation */
+  .sig{display:flex !important;flex-direction:row !important;gap:12px !important;padding:11px 0 !important;border-bottom:1px solid var(--gray-200) !important;align-items:flex-start !important;width:100% !important}
+  .sig-dot{width:8px !important;height:8px !important;min-width:8px !important;border-radius:50% !important;flex-shrink:0 !important;margin-top:5px !important;display:inline-block !important}
+  .sig-text{flex:1 !important;min-width:0 !important;font-size:13px !important;color:var(--black) !important;line-height:1.55 !important}
+  .sig-body{flex:1 !important;min-width:0 !important}
+  .sig-meta{font-size:11px !important;color:var(--gray-500) !important;margin-top:3px !important;display:block !important}
+  .signal-list{display:flex !important;flex-direction:column !important;width:100% !important}
+  /* Row items — prevent key column crushing content */
+  .row-item{display:flex !important;flex-direction:row !important;gap:12px !important;align-items:flex-start !important}
+  .row-key{width:140px !important;min-width:140px !important;flex-shrink:0 !important;color:var(--gray-500) !important;font-size:12px !important}
+  .row-val{flex:1 !important;min-width:0 !important;word-break:break-word !important}
+  /* Tip / placement advice */
+  .tip p{margin-bottom:8px}
+  .tip p:last-child{margin-bottom:0}
 </style>
 </head>
 <body>
@@ -547,12 +562,20 @@ JOB BRIEF:
 
 ${briefBlock}
 
-Generate the INTELLIGENCE section. Include:
-1. Company profile (industry, specialisms, size estimate, location, certifications if inferable, any recent signals)
-2. Hire signals — why does this role exist NOW? (3–4 signals, each with a coloured sig-dot: red=high urgency, amber=medium, blue=market signal, green=derived). Use sig-meta to note confidence level.
-3. A tip box with placement advice specific to this role.
+Generate the INTELLIGENCE section. Use HTML only — no markdown, no citation numbers like [1][2][3], no source references.
 
-Use the row-list/row-item pattern for company profile. Use signal-list/sig pattern for signals.`,
+Include:
+1. Company profile as a row-list/row-item table. Each row: <div class="row-item"><div class="row-key">Label</div><div class="row-val">Value</div></div>. Keep values concise — one or two sentences max per row.
+
+2. Hire signals — why does this role exist NOW? Use this exact structure for each signal:
+<div class="signal-list">
+<div class="sig"><div class="sig-dot" style="background:#c0392b"></div><div class="sig-body"><div class="sig-text">Signal text here</div><div class="sig-meta">Confidence: High · reason</div></div></div>
+</div>
+Dot colours: #c0392b=high urgency, #e67e22=medium, #1a6ef5=market signal, #1a7a3c=derived. Generate 3-4 signals.
+
+3. A tip box: <div class="tip">Placement advice here as plain readable paragraphs. No bullet points inside the tip.</div>
+
+IMPORTANT: Do not include citation numbers like [1], [2], [3] anywhere in the output. Write all content in your own words.`,
 
     source: `${systemPrompt}
 
@@ -615,6 +638,13 @@ async function callClaude(section) {
   const data = await res.json();
   if (data.error) throw new Error(data.error);
   return data.text || '';
+}
+
+function stripCitations(html) {
+  return html
+    .replace(/\[\d+\]/g, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
 }
 
 // ─── Save playbook to localStorage ───────────────────────────────────────────
@@ -810,13 +840,13 @@ async function runAnalysis() {
       callClaude('playbook')
     ]);
 
-    AI_OUTPUT.intel    = intelHtml;
-    AI_OUTPUT.source   = sourceHtml;
-    AI_OUTPUT.playbook = playbookHtml;
+    AI_OUTPUT.intel    = stripCitations(intelHtml);
+    AI_OUTPUT.source   = stripCitations(sourceHtml);
+    AI_OUTPUT.playbook = stripCitations(playbookHtml);
 
-    document.getElementById('intelContent').innerHTML    = intelHtml;
-    document.getElementById('sourceContent').innerHTML   = sourceHtml;
-    document.getElementById('playbookContent').innerHTML = playbookHtml;
+    document.getElementById('intelContent').innerHTML    = AI_OUTPUT.intel;
+    document.getElementById('sourceContent').innerHTML   = AI_OUTPUT.source;
+    document.getElementById('playbookContent').innerHTML = AI_OUTPUT.playbook;
 
     // Inject save button into playbook actions
     const saveBtn = document.createElement('button');
